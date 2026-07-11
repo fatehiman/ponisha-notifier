@@ -12,7 +12,8 @@
   },
   "pkg": {
     "assets": [
-      "src/tray.ps1"
+      "src/tray.ps1",
+      "ponisha-notifier.conf.sample"
     ],
     "targets": [
       "node22-win-x64"

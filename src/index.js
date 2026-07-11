@@ -2,9 +2,35 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadConfig } = require('./config');
+const { execFileSync } = require('node:child_process');
+const { loadConfig, ConfigError } = require('./config');
 const { getUnread, sendSms } = require('./ponisha');
 const { Tray } = require('./tray');
+
+// Show a native message box so double-click launches never "just close" — the
+// user sees why. Falls back to stderr if PowerShell isn't reachable.
+function messageBox(title, message, kind /* 'info' | 'error' */) {
+  const icon = kind === 'error' ? 'Error' : 'Information';
+  const b64 = Buffer.from(
+    'Add-Type -AssemblyName System.Windows.Forms;' +
+      `[System.Windows.Forms.MessageBox]::Show(${JSON.stringify(message)},` +
+      `${JSON.stringify(title)},'OK','${icon}') | Out-Null`,
+    'utf16le',
+  ).toString('base64');
+  try {
+    const sysRoot = process.env.SystemRoot || 'C:\\Windows';
+    const ps = path.join(sysRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+    execFileSync(fs.existsSync(ps) ? ps : 'powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-STA',
+      '-EncodedCommand',
+      b64,
+    ]);
+  } catch {
+    process.stderr.write(`\n${title}\n${message}\n`);
+  }
+}
 
 function ts() {
   return new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -28,8 +54,14 @@ function main() {
   try {
     config = loadConfig();
   } catch (e) {
-    // No tray yet — surface the config error and exit.
-    process.stderr.write(`\nConfiguration error:\n${e.message}\n\n`);
+    // No tray yet — surface the problem in a message box so a double-click
+    // launch doesn't just flash and vanish.
+    if (e instanceof ConfigError) {
+      messageBox('Ponisha Notifier — setup', e.message, e.created ? 'info' : 'error');
+    } else {
+      messageBox('Ponisha Notifier — error', String(e.message || e), 'error');
+    }
+    process.stderr.write(`\n${e.message}\n\n`);
     process.exitCode = 1;
     return;
   }
