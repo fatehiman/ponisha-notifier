@@ -1,0 +1,16 @@
+# Real config with credentials — never commit
+ponisha-notifier.conf
+
+# Cached login session / token
+.ponisha-notifier.session.json
+
+# Runtime log
+ponisha-notifier.log
+
+# Build output
+dist/
+node_modules/
+
+# OS / editor
+Thumbs.db
+.DS_Store

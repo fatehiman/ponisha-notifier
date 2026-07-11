@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────────
+#  Ponisha Notifier — configuration
+#  Copy this file to  "ponisha-notifier.conf"  (same folder as the
+#  .exe) and fill in your details. Lines starting with # are ignored.
+# ─────────────────────────────────────────────────────────────
+
+# How often to check for new messages, in MINUTES (default: 5)
+interval=5
+
+# Your ponisha.ir login.
+#   username = the email OR mobile number you log in with
+#              (contains "@"  -> treated as email,
+#               otherwise     -> treated as mobile)
+username=you@example.com
+password=your-ponisha-password
+
+# ── Advanced (optional) — the defaults below match the spec ──────
+
+# Webhook fired when there are unread messages. {count} is replaced
+# with the number of unread messages. This is the URL that reaches
+# your Telegram via kimiasoft SMS.
+# sms_url=https://sms.kimiasoft.com/sendMsg?p=8798495&c=t&r=monitoring&m=ponisha%20new%20msg%3d{count}
+
+# Ponisha API base URL.
+# api_base=https://api.ponisha.ir/api/v1
+
+# true  -> fire the webhook every interval while unread > 0
+# false -> fire only when the unread count changes (rises)
+# resend_every_interval=true

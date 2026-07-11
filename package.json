@@ -1,0 +1,26 @@
+{
+  "name": "ponisha-notifier",
+  "version": "1.0.0",
+  "description": "Windows system-tray notifier that polls ponisha.ir for unread messages and pings an SMS/Telegram webhook.",
+  "author": "",
+  "license": "MIT",
+  "main": "src/index.js",
+  "bin": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "node build.js"
+  },
+  "pkg": {
+    "assets": [
+      "src/tray.ps1"
+    ],
+    "targets": [
+      "node22-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.3.0",
+    "resedit": "^2.0.0"
+  }
+}
