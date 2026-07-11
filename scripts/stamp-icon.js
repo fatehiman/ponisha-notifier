@@ -43,5 +43,27 @@ res.outputResource(exe);
 
 let out = Buffer.from(exe.generate());
 if (overlay.length) out = Buffer.concat([out, overlay]);
+
+// Flip the PE subsystem from Console (3) to Windows GUI (2) so Windows never
+// attaches a console window (a console-subsystem exe shows a cmd window that,
+// when closed, kills the app). Subsystem field sits at optionalHeader+68, and
+// optionalHeader starts at e_lfanew(0x3C) + 4 (PE sig) + 20 (COFF header).
+function setGuiSubsystem(buf) {
+  const eLfanew = buf.readUInt32LE(0x3c);
+  if (buf.toString('ascii', eLfanew, eLfanew + 4) !== 'PE\0\0') {
+    console.warn('subsystem patch skipped: PE signature not found');
+    return;
+  }
+  const subsystemOff = eLfanew + 4 + 20 + 68;
+  const current = buf.readUInt16LE(subsystemOff);
+  if (current === 3) {
+    buf.writeUInt16LE(2, subsystemOff);
+    console.log('subsystem set to Windows GUI (no console window)');
+  } else {
+    console.log(`subsystem already ${current} (left unchanged)`);
+  }
+}
+setGuiSubsystem(out);
+
 fs.writeFileSync(exePath, out);
 console.log(`icon stamped (overlay ${overlay.length} bytes re-attached) -> ${exePath}`);

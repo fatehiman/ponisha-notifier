@@ -39,7 +39,12 @@ function ts() {
 let logFile = null;
 function log(...args) {
   const line = `[${ts()}] ${args.join(' ')}`;
-  process.stdout.write(line + '\n');
+  try {
+    // No console in GUI-subsystem mode → stdout may be an invalid handle.
+    process.stdout.write(line + '\n');
+  } catch {
+    /* ignore */
+  }
   if (logFile) {
     try {
       fs.appendFileSync(logFile, line + '\n');
