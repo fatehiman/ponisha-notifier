@@ -65,8 +65,9 @@ class Tray extends EventEmitter {
     this._send(`TOOLTIP ${text}`);
   }
 
-  balloon(title, text) {
-    this._send(`BALLOON ${title}\t${text}`);
+  // icon: 'Info' | 'Warning' | 'Error'
+  balloon(title, text, icon = 'Info') {
+    this._send(`BALLOON ${title}\t${text}\t${icon}`);
   }
 
   stop() {

@@ -93,10 +93,12 @@ function main() {
         const shouldSend = config.resendEveryInterval || unread !== lastUnread;
         if (shouldSend) {
           try {
+            // The SMS/Telegram webhook is the new-message notification — no
+            // desktop popup here (only errors get an OS notification).
             await sendSms(config, unread, log);
-            tray.balloon('Ponisha — new message', `${unread} unread message(s)`);
           } catch (e) {
             log(`sms failed: ${e.message}`);
+            tray.balloon('Ponisha Notifier — webhook failed', e.message, 'Error');
           }
         }
       }
@@ -105,6 +107,8 @@ function main() {
     } catch (e) {
       log(`check error (${trigger}): ${e.message}`);
       tray.tooltip(`Ponisha Notifier · error · ${ts().slice(11)}`);
+      // OS notification on every failed check, as requested.
+      tray.balloon('Ponisha Notifier — check failed', e.message, 'Error');
     } finally {
       checking = false;
     }

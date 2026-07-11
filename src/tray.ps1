@@ -74,10 +74,16 @@ function Invoke-Command2 {
   }
   elseif ($line -like 'BALLOON *') {
     $rest = $line.Substring(8)
-    $parts = $rest -split "`t", 2
+    $parts = $rest -split "`t", 3
     $title = $parts[0]
     $text = if ($parts.Count -gt 1) { $parts[1] } else { '' }
-    $notify.ShowBalloonTip(6000, $title, $text, [System.Windows.Forms.ToolTipIcon]::Info)
+    $iconName = if ($parts.Count -gt 2 -and $parts[2]) { $parts[2] } else { 'Info' }
+    $icon = switch ($iconName) {
+      'Error' { [System.Windows.Forms.ToolTipIcon]::Error }
+      'Warning' { [System.Windows.Forms.ToolTipIcon]::Warning }
+      default { [System.Windows.Forms.ToolTipIcon]::Info }
+    }
+    $notify.ShowBalloonTip(8000, $title, $text, $icon)
   }
 }
 
