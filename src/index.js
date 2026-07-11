@@ -87,7 +87,7 @@ function main() {
     checking = true;
     try {
       const { total, unread } = await getUnread(config, log);
-      log(`check (${trigger}): total=${total} unread=${unread}`);
+      log(`check (${trigger}): conversations=${total} unread=${unread}`);
 
       if (unread > 0) {
         const shouldSend = config.resendEveryInterval || unread !== lastUnread;

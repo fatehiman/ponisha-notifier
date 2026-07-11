@@ -75,27 +75,54 @@ async function login(config, log) {
   return token;
 }
 
-// Returns { total, unread }. Re-logs in once on 401 (expired/invalid session).
+const PAGE_LIMIT = 50; // conversations per page (matches the web app)
+const MAX_PAGES = 20; // safety cap
+
+function sumUnread(list) {
+  return (list || []).reduce((s, c) => s + (Number(c.unread_count) || 0), 0);
+}
+
+// Unread MESSAGES come from the chat service — each conversation carries an
+// `unread_count`; the badge is the sum. (The api.ponisha.ir notifications/count
+// endpoint only counts site notifications, not chat messages.)
+//
+// Returns { total, unread }: total = conversations scanned, unread = sum of
+// unread_count. Re-logs in once on 401 (expired/invalid session).
 async function getUnread(config, log, { forceLogin = false } = {}) {
   let token = forceLogin ? null : (loadSession() || {}).token;
   if (!token) token = await login(config, log);
 
-  const url = `${config.apiBase}/users/me/notifications/count`;
-  let res = await fetch(url, { headers: { ...baseHeaders(), Authorization: `Bearer ${token}` } });
+  const fetchPage = (tok, page) =>
+    fetch(`${config.chatBase}/conversations?limit=${PAGE_LIMIT}&page=${page}`, {
+      headers: { ...baseHeaders(), Authorization: `Bearer ${tok}` },
+    });
 
+  let res = await fetchPage(token, 1);
   if (res.status === 401 && !forceLogin) {
     log('session expired — re-logging in');
     token = await login(config, log);
-    res = await fetch(url, { headers: { ...baseHeaders(), Authorization: `Bearer ${token}` } });
+    res = await fetchPage(token, 1);
+  }
+  if (!res.ok) throw new Error(`unread check failed (HTTP ${res.status})`);
+
+  let json = await res.json();
+  let list = Array.isArray(json.data) ? json.data : [];
+  let unread = sumUnread(list);
+  let total = list.length;
+
+  // Conversations are newest-first, so unread ones are on early pages; still,
+  // page through any full pages to be exact (bounded by MAX_PAGES).
+  let page = 1;
+  while (list.length >= PAGE_LIMIT && page < MAX_PAGES) {
+    page += 1;
+    const r = await fetchPage(token, page);
+    if (!r.ok) break;
+    json = await r.json();
+    list = Array.isArray(json.data) ? json.data : [];
+    unread += sumUnread(list);
+    total += list.length;
   }
 
-  if (!res.ok) {
-    throw new Error(`count check failed (HTTP ${res.status})`);
-  }
-  const json = await res.json();
-  const data = (json && json.data) || {};
-  const total = Number(data.total ?? 0);
-  const unread = Number(data.unread ?? 0);
   return { total, unread };
 }
 

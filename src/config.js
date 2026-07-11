@@ -56,8 +56,12 @@ const SAMPLE_TEXT = [
   '# with the number of unread messages (reaches Telegram via kimiasoft SMS).',
   '# sms_url=https://sms.kimiasoft.com/sendMsg?p=8798495&c=t&r=monitoring&m=ponisha%20new%20msg%3d{count}',
   '',
-  '# Ponisha API base URL.',
+  '# Ponisha API base URL (used for login).',
   '# api_base=https://api.ponisha.ir/api/v1',
+  '',
+  '# Chat service base URL. Unread MESSAGES are counted here (sum of each',
+  '# conversation unread_count); notifications/count does NOT count messages.',
+  '# chat_base=https://chat.ponisha.ir/v1',
   '',
   '# true  -> fire the webhook every interval while unread > 0',
   '# false -> fire only when the unread count changes (rises)',
@@ -78,6 +82,8 @@ function readSampleText() {
 const DEFAULTS = {
   interval: 5, // minutes
   api_base: 'https://api.ponisha.ir/api/v1',
+  // Unread MESSAGES live in the separate chat service (not notifications/count).
+  chat_base: 'https://chat.ponisha.ir/v1',
   sms_url:
     'https://sms.kimiasoft.com/sendMsg?p=8798495&c=t&r=monitoring&m=ponisha%20new%20msg%3d{count}',
   // Resend the SMS every interval while unread > 0 (true), or only when the
@@ -143,6 +149,7 @@ function loadConfig() {
     intervalMs: Math.round(intervalMin * 60 * 1000),
     intervalMin,
     apiBase: (parsed.api_base || DEFAULTS.api_base).replace(/\/$/, ''),
+    chatBase: (parsed.chat_base || DEFAULTS.chat_base).replace(/\/$/, ''),
     smsUrl: parsed.sms_url || DEFAULTS.sms_url,
     resendEveryInterval: toBool(parsed.resend_every_interval, DEFAULTS.resend_every_interval),
     paths: { conf: CONF_PATH, session: SESSION_PATH, base: baseDir },

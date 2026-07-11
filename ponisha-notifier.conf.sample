@@ -21,8 +21,13 @@ password=your-ponisha-password
 # your Telegram via kimiasoft SMS.
 # sms_url=https://sms.kimiasoft.com/sendMsg?p=8798495&c=t&r=monitoring&m=ponisha%20new%20msg%3d{count}
 
-# Ponisha API base URL.
+# Ponisha API base URL (used for login).
 # api_base=https://api.ponisha.ir/api/v1
+
+# Ponisha chat service base URL. Unread MESSAGES are counted here (sum of each
+# conversation's unread_count) — the notifications/count endpoint does NOT
+# count chat messages.
+# chat_base=https://chat.ponisha.ir/v1
 
 # true  -> fire the webhook every interval while unread > 0
 # false -> fire only when the unread count changes (rises)

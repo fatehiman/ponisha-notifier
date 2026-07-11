@@ -22,9 +22,13 @@ you get notified on your phone.
 1. **Login** — `POST https://api.ponisha.ir/api/v1/auth/login` with your
    email/mobile + password, returns a bearer token (cached in
    `.ponisha-notifier.session.json` so restarts reuse the session).
-2. **Check** — `GET /api/v1/users/me/notifications/count` →
-   `{"data":{"total":26,"unread":0}}`. If the token has expired (HTTP 401) it
-   logs in again automatically.
+2. **Check** — `GET https://chat.ponisha.ir/v1/conversations` (same bearer
+   token) and sums each conversation's `unread_count`. That's the unread
+   **message** badge. If the token has expired (HTTP 401) it logs in again
+   automatically.
+   > Note: `api/v1/users/me/notifications/count` only counts *site
+   > notifications* (bids, etc.), **not** chat messages — that's why unread
+   > messages don't show up there.
 3. **Notify** — when `unread > 0`, it GETs your `sms_url` with `{count}`
    replaced by the number of unread messages. By default it re-sends every
    interval while `unread > 0`.
